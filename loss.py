@@ -2,6 +2,8 @@ from typing import Optional
 import torch
 import torch.nn as nn
 
+# to be implemented
+from replay_buffer import Experience
 
 def approx_kl_divergence(
     log_probs: torch.Tensor,
@@ -36,8 +38,8 @@ def masked_mean(
     Compute the mean over `dim`, ignoring elements where `mask==0`.
     
     Args:
-        tensor (torch.Tensor): Input tensor whose mean to be computed
-        mask (Optional[torch.Tensor]): Binary mask same shape as tensor (1=keep, 0=ignore)
+        tensor (torch.Tensor): Input tensor whose mean to be computed.
+        mask (Optional[torch.Tensor]): Binary mask same shape as tensor (1=keep, 0=ignore).
         dim (int or tuple of ints, optional): 
             Dimension(s) along which to compute the mean.
             If 'None', mean is taken over all elements in tensor.
@@ -48,3 +50,49 @@ def masked_mean(
     if mask is None:
         return torch.mean(axis=dim)
     return (tensor * mask).sum(axis=dim) / mask.sum(axis=dim)
+
+
+class GRPOLoss(nn.Module):
+    """GRPO actor loss over a batch of sampled outputs."""
+
+    def __init__(self, clip_eps: float, kl_weight: float) -> None:
+        """
+        kl_weight: beta in the DeepSeekMath paper.
+        """
+        super().__init__()
+        self.clip_eps = clip_eps
+        self.kl_weight = kl_weight
+
+    def forward(
+        self,
+        log_probs: torch.Tensor,
+        experience: Experience
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """
+        Follow DeepSeekMath GRPO formula, but with a twist on action_mask.
+        """
+        old_log_probs = experience.action_log_probs
+        log_probs_ref = experience.log_probs_ref
+        action_mask = experience.action_mask
+        advantages = experience.advantages
+
+        kl = approx_kl_divergence(
+            log_probs=log_probs,
+            log_probs_ref=log_probs_ref,
+            action_mask=action_mask,
+        )
+
+        ratio = (log_probs - old_log_probs).exp()
+        surr1 = ratio * advantages
+        surr2 = ratio.clamp(1 - self.clip_eps, 1 + self.clip_eps) * advantages
+
+        # DeepSeekMath algorithm (and PPO-style algorithms) maximizes GRPO objective.
+        # However, in PyTorch optimizer, Adam minimizes the loss. 
+        # Thus, we switch the sign here.
+        loss = -torch.min(surr1, surr2) + self.kl_weight * kl
+
+        # Compute single loss for the whole sampled batch of outputs.
+        loss = masked_mean(loss, action_mask, dim=-1).mean()
+
+        # Compute KL divergence over the batch into 1 scalar to feed into optimizer.
+        return loss, kl.mean()
