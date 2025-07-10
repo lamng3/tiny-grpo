@@ -29,3 +29,9 @@ pip install flash-attn --no-build-isolation
 ```
 python train.py
 ```
+
+5. Transfer file from local computer to Runpod instance
+
+```
+scp -i ~/.ssh/id_ed25519 -P <port> <local_file_path> root@<host_name>:<remote_destination_path>
+```
