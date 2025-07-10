@@ -5,7 +5,7 @@
 1. Spin up a Runpod instance
 
 ```
-Choose 1 RTX A6000 on Axolotl docker image.
+choose 1 RTX A6000 on Axolotl docker image.
 ```
 
 2. Create conda env
