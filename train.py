@@ -62,7 +62,7 @@ def rollout(
     """
     Generate a number of rollout sequences from the model given a prompt and task
 
-    Review section 2, 3
+    [TODO] Review section 2, 3
 
     Return:
         [log_probs, rewards, outputs]
