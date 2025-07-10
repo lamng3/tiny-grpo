@@ -28,7 +28,9 @@ class Experience:
     action_log_probs: torch.Tensor
     log_probs_ref: torch.Tensor
     advantages: Optional[torch.Tensor]
+    attention_mask: Optional[torch.Tensor]
     action_mask: torch.Tensor
+    kl: Optional[torch.Tensor] = None
 
     def to(self, device: torch.device) -> Self:
         """send elements to device (GPU/CPU)"""
@@ -49,7 +51,9 @@ def split_experience_batch(experience: Experience) -> list[Experience]:
         "sequences",
         "action_log_probs",
         "log_probs_ref",
+        "returns",
         "advantages",
+        "attention_mask",
         "action_mask",
     )
     for key in keys:
@@ -69,7 +73,9 @@ def join_experience_batch(items: list[Experience]) -> Experience:
         "sequences",
         "action_log_probs",
         "log_probs_ref",
+        "returns",
         "advantages",
+        "attention_mask",
         "action_mask",
     )
     for key in keys:
