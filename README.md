@@ -10,7 +10,7 @@ This project is inspired by and builds upon [open-thought/tiny-grpo](https://git
 1. Spin up a RunPod instance
 
 ```
-choose 1 RTX A6000 on Axolotl docker image.
+choose 1 RTX A6000 ($0.49/hr) on Axolotl docker image.
 ```
 
 2. Create conda env
