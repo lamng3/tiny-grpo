@@ -20,6 +20,7 @@ conda activate grpo
 
 ```
 pip install -r requirements.txt
+pip install hf_transfer
 pip install flash-attn --no-build-isolation
 ```
 

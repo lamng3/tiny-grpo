@@ -8,10 +8,7 @@ import torch.nn.functional as F
 def zero_pad_sequences(
     sequences: list[torch.Tensor], side: str = "left"
 ) -> torch.Tensor:
-    """
-    pad sequences with 0 on either left or right
-
-    """
+    """pad sequences with 0 on either left or right"""
     assert side in ("left", "right")
     max_len = max(seq.size(0) for seq in sequences)
     padded_sequences = []
@@ -27,6 +24,7 @@ class Experience:
     sequences: torch.Tensor
     action_log_probs: torch.Tensor
     log_probs_ref: torch.Tensor
+    returns: Optional[torch.Tensor]
     advantages: Optional[torch.Tensor]
     attention_mask: Optional[torch.Tensor]
     action_mask: torch.Tensor
@@ -62,8 +60,10 @@ def split_experience_batch(experience: Experience) -> list[Experience]:
             vals = [None] * batch_size
         else:
             vals = torch.unbind(value)
+        assert batch_size == len(vals)
         for i, v in enumerate(vals):
             batch_data[i][key] = v
+
     return [Experience(**data) for data in batch_data]
 
 
@@ -81,7 +81,7 @@ def join_experience_batch(items: list[Experience]) -> Experience:
     for key in keys:
         vals = [getattr(item, key) for item in items]
         if all(v is not None for v in vals):
-            data = 0
+            data = zero_pad_sequences(vals, "left")
         else:
             data = None
         batch_data[key] = data
@@ -91,7 +91,7 @@ def join_experience_batch(items: list[Experience]) -> Experience:
 class ReplayBuffer:
     def __init__(self, limit: int = 0) -> None:
         self.limit = limit
-        self.items = list[Experience] = []
+        self.items: list[Experience] = []
     
     def append(self, experience: Experience) -> None:
         """add an experience to pool"""

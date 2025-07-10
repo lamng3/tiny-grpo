@@ -4,6 +4,7 @@ import torch.nn as nn
 
 from replay_buffer import Experience
 
+
 def approx_kl_divergence(
     log_probs: torch.Tensor,
     log_probs_ref: torch.Tensor,
@@ -47,7 +48,14 @@ def masked_mean(
         torch.Tensor: The masked mean of `tensor` along `dim`.
     """
     if mask is None:
-        return torch.mean(axis=dim)
+        # previously a bug appear here, it is fixed now
+        # torch.mean() is used instead of tensor.mean()
+        # so the loss treated as a function instead of a tensor
+        # which results in 'int' object has no attribute 'long'
+        # then GRPOLoss forward is calculated incorrectly,
+        # resulting in objective calculated wrong
+        # the model loading has no issue, the bug is here :)
+        return tensor.mean(axis=dim)
     return (tensor * mask).sum(axis=dim) / mask.sum(axis=dim)
 
 
@@ -55,9 +63,7 @@ class GRPOLoss(nn.Module):
     """GRPO actor loss over a batch of sampled outputs."""
 
     def __init__(self, clip_eps: float, kl_weight: float) -> None:
-        """
-        kl_weight: beta in the DeepSeekMath paper.
-        """
+        """kl_weight: beta in the DeepSeekMath paper."""
         super().__init__()
         self.clip_eps = clip_eps
         self.kl_weight = kl_weight
@@ -65,11 +71,9 @@ class GRPOLoss(nn.Module):
     def forward(
         self,
         log_probs: torch.Tensor,
-        experience: Experience
+        experience: Experience,
     ) -> tuple[torch.Tensor, torch.Tensor]:
-        """
-        Follow DeepSeekMath GRPO formula, but with a twist on action_mask.
-        """
+        """Follow DeepSeekMath GRPO formula, but with a twist on action_mask."""
         old_log_probs = experience.action_log_probs
         log_probs_ref = experience.log_probs_ref
         action_mask = experience.action_mask

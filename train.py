@@ -23,12 +23,12 @@ from replay_buffer import ReplayBuffer, Experience, join_experience_batch
 def load_model(
     model_name_or_path: str,
     trust_remote_code: bool = False,
-    bf16: bool = True, #bfloat16 data type
+    bf16: bool = True,
     device_map=None,
 ) -> tuple[LlamaForCausalLM, PreTrainedTokenizer]:
-    """load model with flash attention implementation"""
+    """load model with flash attention"""
     tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
-    tokenizer.pad_token = tokenizer.eos_token # add ending sentence token
+    tokenizer.pad_token = tokenizer.eos_token # ending sentence token
     model = LlamaForCausalLM.from_pretrained(
         model_name_or_path,
         trust_remote_code=trust_remote_code,
@@ -51,7 +51,7 @@ def rollout(
     model: LlamaForCausalLM,
     tokenizer: PreTrainedTokenizer,
     task: str,
-    oracle_answer: str # reference or ground truth for eval
+    oracle_answer: str, # reference or ground truth for eval
     num_rollouts: int,
     max_length: int = 1024,
     temperature: float = 1.0,
@@ -62,18 +62,22 @@ def rollout(
     """
     Generate a number of rollout sequences from the model given a prompt and task
 
-    [TODO] Review section 2, 3
-
     Return:
         [log_probs, rewards, outputs]
     """
-    
-    model.eval() # set model to eval mode
+
+    model.eval()
 
     # 1. format prompt
     chat_messages = [
-        { "role": "system", "content": system_prompt }, 
-        { "role": "user", "content": task }
+        {
+            "role": "system",
+            "content": system_prompt,
+        },
+        {
+            "role": "user",
+            "content": task,
+        },
     ]
     chat_prompt = tokenizer.apply_chat_template(
         chat_messages, tokenize=False, add_generation_prompt=True
@@ -87,7 +91,6 @@ def rollout(
     ).to("cuda")
 
     # duplicate prompt num_rollouts times
-    # repeat along first dimension (0th)
     model_inputs["attention_mask"] = model_inputs["attention_mask"].repeat(
         num_rollouts, 1
     )
@@ -126,8 +129,6 @@ def rollout(
 
         answer = answer_match.group(1) if answer_match else None
         reward = 0
-
-        # [TODO] Replace this simple reward logic
         if answer is not None:
             if answer == oracle_answer:
                 reward = 1.0
@@ -146,15 +147,15 @@ def init_rng(seed: int) -> torch.Generator:
     return torch.manual_seed(seed)
 
 
-def group_advantages(returns: torch.Tensor, eps: float: 1e-8) -> torch.Tensor:
+def group_advantages(returns: torch.Tensor, eps: float = 1e-8) -> torch.Tensor:
     # [TODO] Implement Dr.GRPO version (GRPO without bias)
     return (returns - returns.mean()) / (returns.std() + eps)
 
 
 def sequence_log_probs_from_logits(
-    logits: torch.Tensor, output_ids: torch.Tensor
+    logits: torch.tensor, output_ids: torch.tensor
 ) -> torch.Tensor:
-    log_prob: F.log_softmax(logits, dim=-1)
+    log_prob = F.log_softmax(logits, dim=-1)
     return log_prob.gather(dim=-1, index=output_ids.unsqueeze(-1)).squeeze(-1)
 
 
@@ -205,7 +206,7 @@ def main():
     wandb_project = "tiny_grpo"  # "tiny_grpo"
     device_index = 0
     model_name = "meta-llama/Llama-3.2-1B-Instruct"
-    checkpoint_path = Path("./tiny-grpo/output")
+    checkpoint_path = Path("./tiny-grpo/output") # change this to ./output
     checkpoint_interval = 20
     train_batch_size = 16
     lr = 5e-6
@@ -342,7 +343,9 @@ def main():
                 optimizer.zero_grad()
 
                 log_probs = sequences_log_probs(
-                    model, sequence_ids=exp.sequences, attention_mask=exp.attention_mask
+                    model=model, 
+                    sequence_ids=exp.sequences, 
+                    attention_mask=exp.attention_mask,
                 )
 
                 loss, kl = objective(log_probs=log_probs, experience=exp)
