@@ -1,7 +1,7 @@
 # tiny-grpo
 A minimal, hackable implementation of Group Relative Policy Optimization (GRPO).
 
-**Goal**: Provide a working toy implementation of GRPO for training a local `llama-3.2-3b` model using reinforcement learning. The focus is on understanding the GRPO algorithm and running everything locally on a single RTX A6000 node on RunPod.
+**Goal**: Provide a working implementation of GRPO for training a local `llama-3.2-3b` model using RL. Focus on understanding GRPO algorithm and running everything locally on a single RTX A6000 node on RunPod.
 
 This project is inspired by and builds upon [open-thought/tiny-grpo](https://github.com/open-thought/tiny-grpo).
 
