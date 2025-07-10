@@ -1,8 +1,13 @@
 # tiny-grpo
+A minimal, hackable implementation of Group Relative Policy Optimization (GRPO).
+
+**Goal**: Provide a working toy implementation of GRPO for training a local `llama-3.2-3b` model using reinforcement learning (RL). The focus is on understanding the GRPO algorithm, tuning its hyperparameters, and running everything locally on a single RTX A6000 node on RunPod.
+
+This project is inspired by and builds upon [open-thought/tiny-grpo](https://github.com/open-thought/tiny-grpo)
 
 ### Setup
 
-1. Spin up a Runpod instance
+1. Spin up a RunPod instance
 
 ```
 choose 1 RTX A6000 on Axolotl docker image.
@@ -30,8 +35,17 @@ pip install flash-attn --no-build-isolation
 python train.py
 ```
 
-5. Transfer file from local computer to Runpod instance
+5. Transfer file from local computer to RunPod instance
 
 ```
 scp -i ~/.ssh/id_ed25519 -P <port> <local_file_path> root@<host_name>:<remote_destination_path>
 ```
+
+### Training Results
+
+coming soon ...
+
+### References
+
+- [DeepSeek-R1 tech report](https://github.com/deepseek-ai/DeepSeek-R1/blob/main/DeepSeek_R1.pdf)
+- [DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models](https://arxiv.org/abs/2402.03300)
