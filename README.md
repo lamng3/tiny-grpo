@@ -50,9 +50,9 @@ scp -i ~/.ssh/id_ed25519 -P <port> <local_file_path> root@<host_name>:<remote_de
 
 The run stopped at 9K steps due to insufficient storage memory. To prevent this, consider doubling the storage capacity or offloading checkpoints to temporary storage.
 
-![Training Returns](results/returns.png){width=600 height=400}
+<img src="results/returns.png" alt="Training Returns" width="600" height="400"/>
 
-![Training KL](results/kl.png){width=600 height=400}
+<img src="results/kl.png"     alt="Training KL"      width="600" height="400"/>
 
 ### References
 
