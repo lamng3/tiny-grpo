@@ -5,6 +5,10 @@ A minimal, hackable implementation of Group Relative Policy Optimization (GRPO).
 
 This project is inspired by and builds upon [open-thought/tiny-grpo](https://github.com/open-thought/tiny-grpo).
 
+### Updates
+
+**[2025-07-12]** Supporting Dr.GRPO, with modifications in calculating {`masked_mean` with constant generation max tokens (512 from [oat/oat/args.py](https://github.com/sail-sg/oat/blob/main/oat/args.py))} and {`group_advantage` without std bias}, following [understand-r1-zero/train_zero_math.py](https://github.com/sail-sg/understand-r1-zero/blob/main/train_zero_math.py#L288).
+
 ### Setup
 
 1. Spin up a RunPod instance

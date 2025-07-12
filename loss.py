@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Literal
 import torch
 import torch.nn as nn
 
@@ -33,6 +33,8 @@ def masked_mean(
     tensor: torch.Tensor,
     mask: Optional[torch.Tensor],
     dim: int = None,
+    strategy: Literal["grpo", "dr.grpo"] = "grpo",
+    generate_max_length: int = 512, # change 
 ) -> torch.Tensor:
     """
     Compute the mean over `dim`, ignoring elements where `mask==0`.
@@ -47,6 +49,7 @@ def masked_mean(
     Returns:
         torch.Tensor: The masked mean of `tensor` along `dim`.
     """
+    assert strategy in ("grpo", "dr.grpo")
     if mask is None:
         # previously a bug appear here, it is fixed now
         # torch.mean() is used instead of tensor.mean()
@@ -56,17 +59,31 @@ def masked_mean(
         # resulting in objective calculated wrong
         # the model loading has no issue, the bug is here :)
         return tensor.mean(axis=dim)
+    if strategy == "grpo":
+        return (tensor * mask).sum(axis=dim) / mask.sum(axis=dim)
+    if strategy == "dr.grpo":
+        # Dr.GRPO modification 1: remove length bias by using a constant normalizer
+        return (tensor * mask).sum(axis=-1) / generate_max_length
+    # default: use grpo version
     return (tensor * mask).sum(axis=dim) / mask.sum(axis=dim)
 
 
 class GRPOLoss(nn.Module):
     """GRPO actor loss over a batch of sampled outputs."""
 
-    def __init__(self, clip_eps: float, kl_weight: float) -> None:
+    def __init__(
+        self, 
+        clip_eps: float, 
+        kl_weight: float, 
+        policy_ops: str, 
+        generate_max_length: int
+    ) -> None:
         """kl_weight: beta in the DeepSeekMath paper."""
         super().__init__()
         self.clip_eps = clip_eps
         self.kl_weight = kl_weight
+        self.policy_ops = policy_ops # policy optimization strategy
+        self.generate_max_length = generate_max_length
 
     def forward(
         self,
@@ -95,7 +112,12 @@ class GRPOLoss(nn.Module):
         loss = -torch.min(surr1, surr2) + self.kl_weight * kl
 
         # Compute single loss for the whole sampled batch of outputs.
-        loss = masked_mean(loss, action_mask, dim=-1).mean()
+        loss = masked_mean(
+            loss, action_mask, 
+            dim=-1, 
+            strategy=self.policy_ops,
+            generate_max_length=self.generate_max_length
+        ).mean()
 
         # Compute KL divergence over the batch into 1 scalar to feed into optimizer.
         return loss, kl.mean()

@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 import random
 import re
-from typing import Any, Iterator, Optional
+from typing import Any, Iterator, Optional, Literal
 import wandb
 import torch
 import torch.optim as optim
@@ -147,8 +147,19 @@ def init_rng(seed: int) -> torch.Generator:
     return torch.manual_seed(seed)
 
 
-def group_advantages(returns: torch.Tensor, eps: float = 1e-8) -> torch.Tensor:
-    # [TODO] Implement Dr.GRPO version (GRPO without bias)
+def group_advantages(
+    returns: torch.Tensor, 
+    eps: float = 1e-8, 
+    strategy: Literal["grpo", "dr.grpo"] = "grpo",
+) -> torch.Tensor:
+    """support different advantages grouping"""
+    assert strategy in ("grpo", "dr.grpo")
+    if strategy == "grpo":
+        return (returns - returns.mean()) / (returns.std() + eps)
+    if strategy == "dr.grpo":
+        # Dr.GRPO modification 2: remove difficulty bias by just computing the MC advantage without dividing by std
+        return returns - returns.mean()
+    # default: use grpo version
     return (returns - returns.mean()) / (returns.std() + eps)
 
 
@@ -203,11 +214,16 @@ def read_prompts(
 
 def main():
     seed = 42
-    wandb_project = "tiny_grpo"  # "tiny_grpo"
+    wandb_project = "tiny_grpo"
     device_index = 0
+    
     model_name = "meta-llama/Llama-3.2-1B-Instruct"
-    checkpoint_path = Path("./tiny-grpo/output") # change this to ./output
+    checkpoint_path = Path("./output")
     checkpoint_interval = 20
+
+    # grpo
+    policy_ops = "dr.grpo" # policy optimization strategy
+    generate_max_length = 512
     train_batch_size = 16
     lr = 5e-6
     kl_weight = 0.01
@@ -255,7 +271,12 @@ def main():
     )
 
     replay_buffer = ReplayBuffer()
-    objective = GRPOLoss(clip_eps=clip_eps, kl_weight=kl_weight)
+    objective = GRPOLoss(
+        clip_eps=clip_eps, 
+        kl_weight=kl_weight, 
+        policy_ops=policy_ops,
+        generate_max_length=generate_max_length,
+    )
 
     if wandb_project is None:
         wandb.init(mode="disabled")
@@ -288,7 +309,7 @@ def main():
                 )
                 rollout_returns.append(returns.cpu())
 
-                advantages = group_advantages(returns)
+                advantages = group_advantages(returns, strategy=policy_ops)
                 attention_mask = sequence_ids != pad_token_id
 
                 log_probs = sequences_log_probs(
