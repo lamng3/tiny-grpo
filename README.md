@@ -48,7 +48,7 @@ The run stopped at 9K steps due to insufficient storage memory. To prevent this,
 
 ![Training Returns](results/returns.png)
 
-![Training KL](results/returns.png)
+![Training KL](results/kl.png)
 
 ### References
 
