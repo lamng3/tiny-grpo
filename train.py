@@ -17,6 +17,7 @@ from transformers import (
     GenerationConfig,
 )
 from loss import approx_kl_divergence, GRPOLoss
+from reward import default_reward, soft_overlong_punishment
 from replay_buffer import ReplayBuffer, Experience, join_experience_batch
 
 
@@ -54,10 +55,12 @@ def rollout(
     oracle_answer: str, # reference or ground truth for eval
     num_rollouts: int,
     max_length: int = 1024,
+    overlong_buffer: int = 256,
     temperature: float = 1.0,
     # nucleus sampling (top-p sampling)
     # = sampling only most probable tokens whose cumulative probability adds up to up to top_p
     top_p: float = 1.0, 
+    strategy: Literal["grpo", "dr.grpo", "dapo"] = "grpo",
 ) -> tuple[torch.Tensor, torch.Tensor, list[str]]:
     """
     Generate a number of rollout sequences from the model given a prompt and task
@@ -131,13 +134,8 @@ def rollout(
 
         # reward modeling goes here
         reward = 0
-        if answer is not None:
-            if answer == oracle_answer:
-                reward = 1.0
-            elif oracle_answer in answer:
-                reward = 0.5
-            else:
-                reward = 0.01
+        if strategy == "dapo":
+            reward = soft_overlong_punishment(answer, max_length, overlong_buffer)
 
         returns[i] = reward
 
@@ -225,7 +223,9 @@ def main():
 
     # grpo
     policy_ops = "dapo" # policy optimization strategy
-    generate_max_length = 512
+    # [todo] generate_max_length = max_length in rollout?
+    generate_max_length = 1024 # L_max in DAPO
+    overlong_buffer = 256 # L_cache in DAPO
     train_batch_size = 16
     lr = 5e-6
     kl_weight = 0.01
@@ -238,7 +238,6 @@ def main():
     max_norm = 1.0  # gradient clipping
 
     # rollout params
-    max_length = 1024
     top_p = 1.0
     temperature = 1.0
 
@@ -303,9 +302,11 @@ def main():
                     q,
                     a,
                     num_rollouts=group_size,
-                    max_length=max_length,
+                    max_length=generate_max_length,
+                    overlong_buffer=overlong_buffer,
                     temperature=temperature,
                     top_p=top_p,
+                    strategy=policy_ops,
                 )
 
                 print(

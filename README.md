@@ -10,10 +10,10 @@ This project is inspired by and builds upon [open-thought/tiny-grpo](https://git
 **[2025-07-15]** Supporting [DAPO](https://arxiv.org/abs/2503.14476), following this [huggingface/trl#3130 (comment)](https://github.com/huggingface/trl/issues/3130#issuecomment-2746947835).
 
 - **Token-level Loss** is already implemented as `masked_mean`.     
-- **Clip-Higher** is implemented in [huggingface/trl#3118 (comment)](https://github.com/huggingface/trl/pull/3118).     
-- **Dynamic Sampling** is skipped (see the reason in [huggingface/trl#3130 (comment)](https://github.com/huggingface/trl/issues/3130#issuecomment-2746947835)).     
+- **Clip-Higher** is implemented in [huggingface/trl#3118 (comment)](https://github.com/huggingface/trl/pull/3118). DAPO recommends using `clip_eps_low = 0.2` and `clip_eps_high = 0.28`.
+- **Dynamic Sampling (in progress)** is skipped in [huggingface/trl#3130 (comment)](https://github.com/huggingface/trl/issues/3130#issuecomment-2746947835) but has configurations implemented in [verl/dapo](https://verl.readthedocs.io/en/latest/algo/dapo.html).     
 - **Overlong Filtering** is skipped (see the reason in [huggingface/trl#3130 (comment)](https://github.com/huggingface/trl/issues/3130#issuecomment-2746947835) and [verl/dapo](https://verl.readthedocs.io/en/latest/algo/dapo.html)).     
-- **Soft Overlong Punishment** .
+- **Soft Overlong Punishment** is implemented in [huggingface/trl#3130 (comment)](https://github.com/huggingface/trl/issues/3130#issuecomment-2746947835), with `L_cache = 0.2 * L_max` as observed in [verl/dapo](https://verl.readthedocs.io/en/latest/algo/dapo.html), where it treated `L_cache` as `overlong_buffer`.
 
 **[2025-07-12]** Supporting [Dr.GRPO](https://arxiv.org/abs/2503.20783), with modifications in calculating {`masked_mean` with constant generation max tokens (512 from [oat/oat/args.py](https://github.com/sail-sg/oat/blob/main/oat/args.py))} and {`group_advantage` without std bias}, following [understand-r1-zero/train_zero_math.py](https://github.com/sail-sg/understand-r1-zero/blob/main/train_zero_math.py#L288).
 
