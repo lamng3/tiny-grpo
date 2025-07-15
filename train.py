@@ -128,6 +128,8 @@ def rollout(
         )
 
         answer = answer_match.group(1) if answer_match else None
+
+        # reward modeling goes here
         reward = 0
         if answer is not None:
             if answer == oracle_answer:
