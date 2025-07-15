@@ -150,10 +150,10 @@ def init_rng(seed: int) -> torch.Generator:
 def group_advantages(
     returns: torch.Tensor, 
     eps: float = 1e-8, 
-    strategy: Literal["grpo", "dr.grpo"] = "grpo",
+    strategy: Literal["grpo", "dr.grpo", "dapo"] = "grpo",
 ) -> torch.Tensor:
     """support different advantages grouping"""
-    assert strategy in ("grpo", "dr.grpo")
+    assert strategy in ("grpo", "dr.grpo", "dapo")
     if strategy == "grpo":
         return (returns - returns.mean()) / (returns.std() + eps)
     if strategy == "dr.grpo":

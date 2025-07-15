@@ -49,7 +49,7 @@ def masked_mean(
     Returns:
         torch.Tensor: The masked mean of `tensor` along `dim`.
     """
-    assert strategy in ("grpo", "dr.grpo")
+    assert strategy in ("grpo", "dr.grpo", "dapo")
     if mask is None:
         # previously a bug appear here, it is fixed now
         # torch.mean() is used instead of tensor.mean()
