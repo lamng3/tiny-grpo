@@ -227,7 +227,8 @@ def main():
     train_batch_size = 16
     lr = 5e-6
     kl_weight = 0.01
-    clip_eps = 0.2
+    clip_eps_low = 0.2
+    clip_eps_high = 0.28 if policy_ops == "dapo" else 0.2 # DAPO recommends clip_eps_high = 0.28
 
     group_size = 12
     rollouts_per_step = 32
@@ -272,7 +273,8 @@ def main():
 
     replay_buffer = ReplayBuffer()
     objective = GRPOLoss(
-        clip_eps=clip_eps, 
+        clip_eps_low=clip_eps_low,
+        clip_eps_high=clip_eps_high, 
         kl_weight=kl_weight, 
         policy_ops=policy_ops,
         generate_max_length=generate_max_length,

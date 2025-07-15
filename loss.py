@@ -73,14 +73,16 @@ class GRPOLoss(nn.Module):
 
     def __init__(
         self, 
-        clip_eps: float, 
+        clip_eps_low: float,
+        clip_eps_high: float, 
         kl_weight: float, 
         policy_ops: str, 
         generate_max_length: int
     ) -> None:
         """kl_weight: beta in the DeepSeekMath paper."""
         super().__init__()
-        self.clip_eps = clip_eps
+        self.clip_eps_low = clip_eps_low
+        self.clip_eps_high = clip_eps_high
         self.kl_weight = kl_weight
         self.policy_ops = policy_ops # policy optimization strategy
         self.generate_max_length = generate_max_length
@@ -104,7 +106,7 @@ class GRPOLoss(nn.Module):
 
         ratio = (log_probs - old_log_probs).exp()
         surr1 = ratio * advantages
-        surr2 = ratio.clamp(1 - self.clip_eps, 1 + self.clip_eps) * advantages
+        surr2 = ratio.clamp(1 - self.clip_eps_low, 1 + self.clip_eps_high) * advantages
 
         # DeepSeekMath algorithm (and PPO-style algorithms) maximizes GRPO objective.
         # However, in PyTorch optimizer, Adam minimizes the loss. 
