@@ -34,13 +34,20 @@ pip install hf_transfer
 pip install flash-attn --no-build-isolation
 ```
 
-4. Play with the source in `train.py`
+4. HuggingFace and WandB login
+
+```
+huggingface-cli login
+wandb login
+```
+
+5. Play with the source in `train.py`
 
 ```
 python train.py
 ```
 
-5. Transfer file from local computer to RunPod instance
+6. Transfer file from local computer to RunPod instance
 
 ```
 scp -i ~/.ssh/id_ed25519 -P <port> <local_file_path> root@<host_name>:<remote_destination_path>
