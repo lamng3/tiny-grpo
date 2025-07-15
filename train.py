@@ -134,8 +134,11 @@ def rollout(
 
         # reward modeling goes here
         reward = 0
-        if strategy == "dapo":
-            reward = soft_overlong_punishment(answer, max_length, overlong_buffer)
+        reward = default_reward(answer, oracle_answer)
+        # if strategy == "dapo":
+        #     reward = soft_overlong_punishment(answer, max_length, overlong_buffer)
+        # else:
+        #     reward = default_reward(answer, oracle_answer)
 
         returns[i] = reward
 
@@ -224,7 +227,7 @@ def main():
     # grpo
     policy_ops = "dapo" # policy optimization strategy
     # [todo] generate_max_length = max_length in rollout?
-    generate_max_length = 1024 # L_max in DAPO
+    generate_max_length = 512 # L_max in DAPO
     overlong_buffer = 256 # L_cache in DAPO
     train_batch_size = 16
     lr = 5e-6
@@ -238,6 +241,7 @@ def main():
     max_norm = 1.0  # gradient clipping
 
     # rollout params
+    max_length = 1024
     top_p = 1.0
     temperature = 1.0
 
@@ -302,7 +306,7 @@ def main():
                     q,
                     a,
                     num_rollouts=group_size,
-                    max_length=generate_max_length,
+                    max_length=max_length,
                     overlong_buffer=overlong_buffer,
                     temperature=temperature,
                     top_p=top_p,

@@ -34,7 +34,7 @@ def masked_mean(
     mask: Optional[torch.Tensor],
     dim: int = None,
     strategy: Literal["grpo", "dr.grpo"] = "grpo",
-    generate_max_length: int = 512, # change 
+    generate_max_length: int = 1024, 
 ) -> torch.Tensor:
     """
     Compute the mean over `dim`, ignoring elements where `mask==0`.
