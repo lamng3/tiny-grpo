@@ -222,7 +222,7 @@ def main():
     checkpoint_interval = 20
 
     # grpo
-    policy_ops = "dr.grpo" # policy optimization strategy
+    policy_ops = "dapo" # policy optimization strategy
     generate_max_length = 512
     train_batch_size = 16
     lr = 5e-6
