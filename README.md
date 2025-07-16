@@ -67,8 +67,6 @@ The run stopped at 9K steps due to insufficient storage memory. To prevent this,
 
 <img src="results/returns.png" alt="Training Returns" width="800" height="600"/>
 
-<img src="results/kl.png"     alt="Training KL"      width="800" height="600"/>
-
 ### References
 
 - [DAPO: An Open-Source LLM Reinforcement Learning System at Scale](https://arxiv.org/abs/2503.14476)
