@@ -34,7 +34,8 @@ choose 1 RTX A6000 ($0.49/hr) on Axolotl Docker image.
 2. Create conda env
 
 ```
-cd tiny-grpo
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
 conda create --name grpo python=3.12 -y
 source ~/.bashrc # or ~/.zshrc if you're using zsh
 conda init
@@ -44,8 +45,8 @@ conda activate grpo
 3. Install dependencies
 
 ```
+cd tiny-grpo
 pip install -r requirements.txt
-pip install -U transformers
 pip install hf_transfer
 pip install flash-attn --no-build-isolation
 ```
