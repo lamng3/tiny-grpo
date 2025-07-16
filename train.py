@@ -17,7 +17,7 @@ from transformers import (
     GenerationConfig,
 )
 from loss import approx_kl_divergence, GRPOLoss
-from reward import default_reward, soft_overlong_punishment
+from reward import default_reward, rule_based_reward, soft_overlong_punishment
 from replay_buffer import ReplayBuffer, Experience, join_experience_batch
 
 
@@ -54,8 +54,8 @@ def rollout(
     task: str,
     oracle_answer: str, # reference or ground truth for eval
     num_rollouts: int,
-    max_length: int = 1024,
-    overlong_buffer: int = 256,
+    max_resp_len: int = 1024,
+    overlong_buffer_len: int = 256,
     temperature: float = 1.0,
     # nucleus sampling (top-p sampling)
     # = sampling only most probable tokens whose cumulative probability adds up to up to top_p
@@ -107,7 +107,7 @@ def rollout(
         do_sample=True,
         top_p=top_p,
         temperature=temperature,
-        max_length=max_length,
+        max_length=max_resp_len,
         pad_token_id=pad_token_id,
     )
     sequence_ids = model.generate(**model_inputs, generation_config=generation_config)
@@ -134,11 +134,12 @@ def rollout(
 
         # reward modeling goes here
         reward = 0
-        reward = default_reward(answer, oracle_answer)
-        # if strategy == "dapo":
-        #     reward = soft_overlong_punishment(answer, max_length, overlong_buffer)
-        # else:
-        #     reward = default_reward(answer, oracle_answer)
+        if strategy == "dapo":
+            reward = rule_based_reward(answer, oracle_answer)
+            overlong_reward = soft_overlong_punishment(answer, max_resp_len, overlong_buffer_len)
+            reward += overlong_reward
+        else:
+            reward = default_reward(answer, oracle_answer)
 
         returns[i] = reward
 
@@ -226,9 +227,8 @@ def main():
 
     # grpo
     policy_ops = "dapo" # policy optimization strategy
-    # [todo] generate_max_length = max_length in rollout?
-    generate_max_length = 512 # L_max in DAPO
-    overlong_buffer = 256 # L_cache in DAPO
+    max_resp_len = 512 # max response length (aka L_max in DAPO)
+    overlong_buffer_len = 256 # overlong buffer length (aka L_cache in DAPO)
     train_batch_size = 16
     lr = 5e-6
     kl_weight = 0.01
@@ -241,7 +241,6 @@ def main():
     max_norm = 1.0  # gradient clipping
 
     # rollout params
-    max_length = 1024
     top_p = 1.0
     temperature = 1.0
 
@@ -282,7 +281,7 @@ def main():
         clip_eps_high=clip_eps_high, 
         kl_weight=kl_weight, 
         policy_ops=policy_ops,
-        generate_max_length=generate_max_length,
+        max_resp_len=max_resp_len,
     )
 
     if wandb_project is None:
@@ -306,8 +305,8 @@ def main():
                     q,
                     a,
                     num_rollouts=group_size,
-                    max_length=max_length,
-                    overlong_buffer=overlong_buffer,
+                    max_resp_len=max_resp_len,
+                    overlong_buffer_len=overlong_buffer_len,
                     temperature=temperature,
                     top_p=top_p,
                     strategy=policy_ops,

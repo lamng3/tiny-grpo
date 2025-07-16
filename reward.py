@@ -1,4 +1,4 @@
-def default_reward(answer: str, oracle_answer: str):
+def default_reward(answer: str, oracle_answer: str) -> float:
     """default reward"""
     reward = 0
     if answer is not None:
@@ -11,20 +11,34 @@ def default_reward(answer: str, oracle_answer: str):
     return reward
 
 
-def soft_overlong_punishment(answer: str, L_max: int, L_cache: int):
+def rule_based_reward(answer: str, oracle_answer: str) -> float:
+    """introduced in DAPO to avoid reward hacking"""
+    reward = 0
+    if answer is not None:
+        if answer == oracle_answer:
+            reward = 1
+        else:
+            reward = -1
+    return reward
+
+
+def soft_overlong_punishment(
+    answer: str, 
+    max_resp_len: int,
+    overlong_buffer_len: int,
+    penalty_factor: float = 1.0,
+) -> float:
     """
     Soft Overlong Punishment in DAPO paper
     When response length exceeds the predefined maximum value, a punishment interval is applied
     
     Args
-        L_max (int): maximum length a response can have
-        L_cache (int): also mentioned as overlong buffer in verl/dapo implementation 
+        max_resp_len (int): maximum length a response can have (aka L_max in DAPO)
+        overlong_buffer_len (int): overlong buffer length of a response (aka L_cache in DAPO)
     """
-    reward = 0
-    answer_length = len(answer) if answer is not None else 0
-    if answer_length <= L_max - L_cache:
-        return 0
-    elif L_max - L_cache < answer_length <= L_max:
-        return ((L_max - L_cache) - answer_length) / L_cache
-    else:
-        return -1
+    valid_resp_len = len(answer) if answer is not None else 0
+    expected_len = max_resp_len - overlong_buffer_len
+    exceed_len = valid_resp_len - expected_len
+    overlong_penalty_factor = penalty_factor
+    overlong_reward = min(-exceed_len / overlong_buffer_len * overlong_penalty_factor, 0)
+    return overlong_reward
