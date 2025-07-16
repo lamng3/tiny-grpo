@@ -7,9 +7,11 @@ This project is inspired by and builds upon [open-thought/tiny-grpo](https://git
 
 ### Updates
 
-**[2025-07-16]** Upgrading `transformers 4.48.1 -> 4.53.2`. Starting from `transformers>=4.50`, the library modularized model support. Switched to using `AutoModelForCausalLM`.
+**[2025-07-16]** Upgrading `transformers 4.48.1 -> 4.53.2`. Starting from `transformers>=4.50`, the library modularized model support (see [huggingface/transformers (release v4.50.0)](https://github.com/huggingface/transformers/releases/tag/v4.50.0)). Switched to using `AutoModelForCausalLM`.
 
 - To load LLaMA models, you must explicitly install the llama extra. Perform sanity check with `python -c "from transformers.models.llama import LlamaForCausalLM; print(LlamaForCausalLM)"`
+
+- See [lamng3/tiny-grpo (issue #1)](https://github.com/lamng3/tiny-grpo/issues/1) for more details.
 
 **[2025-07-15]** Supporting [DAPO](https://arxiv.org/abs/2503.14476), following this [huggingface/trl#3130 (comment)](https://github.com/huggingface/trl/issues/3130#issuecomment-2746947835).
 
