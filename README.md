@@ -63,11 +63,7 @@ scp -i ~/.ssh/id_ed25519 -P <port> <local_file_path> root@<host_name>:<remote_de
 
 ### Training Results
 
-The run stopped at 9K steps due to insufficient storage memory. To prevent this, consider doubling the storage capacity or offloading checkpoints to temporary storage. 
-
-- **(todo)** Train DAPO using GRPOLoss with a generation maximum length of 1024 and `soft_overlong_punishment`.
-- Train DAPO using GRPOLoss with a generation maximum length of 512 and `default_reward`.
-- Train GRPO and Dr.GRPO with a generation maximum length of 512 and `default_reward`.
+The run stopped at 9K steps due to insufficient storage memory. To prevent this, consider doubling the storage capacity or offloading checkpoints to temporary storage.
 
 <img src="results/returns.png" alt="Training Returns" width="800" height="600"/>
 
