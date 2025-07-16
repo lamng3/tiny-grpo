@@ -64,7 +64,23 @@ wandb login
 python train.py
 ```
 
-6. Transfer file from local computer to RunPod instance
+6. Pushing code to GitHub
+
+```
+<!-- generate SSH key (if not yet) -->
+ssh-keygen -t ed25519 -C "your_email@example.com"
+
+<!-- add public key to github -->
+cat ~/.ssh/id_ed25519.pub
+
+<!-- change repo remote to SSH -->
+git remote set-url origin git@github.com:lamng3/tiny-grpo.git
+
+<!-- test connection -->
+ssh -T git@github.com
+```
+
+7. Transfer file from local computer to RunPod instance
 
 ```
 scp -i ~/.ssh/id_ed25519 -P <port> <local_file_path> root@<host_name>:<remote_destination_path>
