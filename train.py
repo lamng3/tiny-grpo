@@ -227,7 +227,7 @@ def main():
 
     # grpo
     policy_ops = "dapo" # policy optimization strategy
-    max_resp_len = 512 # max response length (aka L_max in DAPO)
+    max_resp_len = 1024 # max response length (aka L_max in DAPO)
     overlong_buffer_len = 256 # overlong buffer length (aka L_cache in DAPO)
     train_batch_size = 16
     lr = 5e-6
