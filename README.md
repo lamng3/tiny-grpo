@@ -11,7 +11,7 @@ This project is inspired by and builds upon [open-thought/tiny-grpo](https://git
 
 - **Token-level Loss** is already implemented as `masked_mean`.     
 - **Clip-Higher** is implemented following [huggingface/trl#3118 (comment)](https://github.com/huggingface/trl/pull/3118). DAPO recommends using `clip_eps_low = 0.2` and `clip_eps_high = 0.28`.
-- **Dynamic Sampling (in progress)** is skipped in [huggingface/trl#3130 (comment)](https://github.com/huggingface/trl/issues/3130#issuecomment-2746947835) but has configurations implemented in [verl/dapo](https://verl.readthedocs.io/en/latest/algo/dapo.html).     
+- **Dynamic Sampling (in progress)** is skipped in [huggingface/trl#3130 (comment)](https://github.com/huggingface/trl/issues/3130#issuecomment-2746947835) because of inefficiency. The configurations can be found in [verl/dapo](https://verl.readthedocs.io/en/latest/algo/dapo.html).
 - **Overlong Filtering** is skipped (see the reason in [huggingface/trl#3130 (comment)](https://github.com/huggingface/trl/issues/3130#issuecomment-2746947835) and [verl/dapo](https://verl.readthedocs.io/en/latest/algo/dapo.html)).     
 - **Soft Overlong Punishment** is implemented following [huggingface/trl#3130 (comment)](https://github.com/huggingface/trl/issues/3130#issuecomment-2746947835), with `L_cache = 256` for `L_max = 1024`, inspired from [verl/dapo](https://verl.readthedocs.io/en/latest/algo/dapo.html), where `L_cache` is `overlong_buffer`.
 
