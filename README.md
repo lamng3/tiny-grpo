@@ -74,7 +74,7 @@ ssh-keygen -t ed25519 -C "your_email@example.com"
 cat ~/.ssh/id_ed25519.pub
 
 <!-- change repo remote to SSH -->
-git remote set-url origin git@github.com:lamng3/tiny-grpo.git
+git remote set-url origin git@github.com:<username>/<repo_name>.git
 
 <!-- test connection -->
 ssh -T git@github.com
