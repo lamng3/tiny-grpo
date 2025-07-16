@@ -7,6 +7,10 @@ This project is inspired by and builds upon [open-thought/tiny-grpo](https://git
 
 ### Updates
 
+**[2025-07-16]** Upgrading `transformers 4.48.1 -> 4.53.2`. Starting from `transformers>=4.50`, the library modularized model support. Switched to using `AutoModelForCausalLM`.
+
+- To load LLaMA models, you must explicitly install the llama extra. Perform sanity check with `python -c "from transformers.models.llama import LlamaForCausalLM; print(LlamaForCausalLM)"`
+
 **[2025-07-15]** Supporting [DAPO](https://arxiv.org/abs/2503.14476), following this [huggingface/trl#3130 (comment)](https://github.com/huggingface/trl/issues/3130#issuecomment-2746947835).
 
 - **Token-level Loss** is already implemented as `masked_mean`.     
@@ -39,6 +43,7 @@ conda activate grpo
 
 ```
 pip install -r requirements.txt
+pip install -U transformers
 pip install hf_transfer
 pip install flash-attn --no-build-isolation
 ```

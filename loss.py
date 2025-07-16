@@ -34,7 +34,7 @@ def masked_mean(
     mask: Optional[torch.Tensor],
     dim: int = None,
     strategy: Literal["grpo", "dr.grpo"] = "grpo",
-    generate_max_length: int = 1024, 
+    max_resp_len: int = 1024, 
 ) -> torch.Tensor:
     """
     Compute the mean over `dim`, ignoring elements where `mask==0`.
@@ -45,7 +45,8 @@ def masked_mean(
         dim (int or tuple of ints, optional): 
             Dimension(s) along which to compute the mean.
             If 'None', mean is taken over all elements in tensor.
-        
+        strategy (str): policy optimization strategy
+        max_resp_len (int): maximum response length (generation max length)
     Returns:
         torch.Tensor: The masked mean of `tensor` along `dim`.
     """
@@ -63,7 +64,7 @@ def masked_mean(
         return (tensor * mask).sum(axis=dim) / mask.sum(axis=dim)
     if strategy == "dr.grpo":
         # Dr.GRPO modification 1: remove length bias by using a constant normalizer
-        return (tensor * mask).sum(axis=-1) / generate_max_length
+        return (tensor * mask).sum(axis=-1) / max_resp_len
     # default: use grpo version
     return (tensor * mask).sum(axis=dim) / mask.sum(axis=dim)
 
@@ -77,7 +78,7 @@ class GRPOLoss(nn.Module):
         clip_eps_high: float, 
         kl_weight: float, 
         policy_ops: str, 
-        generate_max_length: int
+        max_resp_len: int
     ) -> None:
         """kl_weight: beta in the DeepSeekMath paper."""
         super().__init__()
@@ -85,7 +86,7 @@ class GRPOLoss(nn.Module):
         self.clip_eps_high = clip_eps_high
         self.kl_weight = kl_weight
         self.policy_ops = policy_ops # policy optimization strategy
-        self.generate_max_length = generate_max_length
+        self.max_resp_len = max_resp_len
 
     def forward(
         self,
@@ -118,7 +119,7 @@ class GRPOLoss(nn.Module):
             loss, action_mask, 
             dim=-1, 
             strategy=self.policy_ops,
-            generate_max_length=self.generate_max_length
+            max_resp_len=self.max_resp_len
         ).mean()
 
         # Compute KL divergence over the batch into 1 scalar to feed into optimizer.
