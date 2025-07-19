@@ -7,6 +7,10 @@ This project is inspired by and builds upon [open-thought/tiny-grpo](https://git
 
 ### Updates
 
+**[2025-07-19]** (in-progress) Supporting [GPG: Group Policy Gradient](https://arxiv.org/abs/2504.02546). 
+
+[verl/gpg](https://verl.readthedocs.io/en/latest/algo/gpg.html)
+
 **[2025-07-16]** Upgrading `transformers 4.48.1 -> 4.53.2`. Starting from `transformers>=4.50`, the library modularized model support (see [huggingface/transformers (release v4.50.0)](https://github.com/huggingface/transformers/releases/tag/v4.50.0)). Switched to using `AutoModelForCausalLM`.
 
 - To load LLaMA models, you must explicitly install the llama extra. Perform sanity check with `python -c "from transformers.models.llama import LlamaForCausalLM; print(LlamaForCausalLM)"`
@@ -94,6 +98,7 @@ The run stopped at 9K steps due to insufficient storage memory. To prevent this,
 
 ### References
 
+- [GPG: A Simple and Strong Reinforcement Learning Baseline for Model Reasoning](https://arxiv.org/abs/2504.02546)
 - [DAPO: An Open-Source LLM Reinforcement Learning System at Scale](https://arxiv.org/abs/2503.14476)
 - [Understanding R1-Zero-Like Training: A Critical Perspective](https://arxiv.org/abs/2503.20783)
 - [DeepSeek-R1 Tech Report](https://github.com/deepseek-ai/DeepSeek-R1/blob/main/DeepSeek_R1.pdf)
