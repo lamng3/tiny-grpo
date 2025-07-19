@@ -33,7 +33,7 @@ def masked_mean(
     tensor: torch.Tensor,
     mask: Optional[torch.Tensor],
     dim: int = None,
-    strategy: Literal["grpo", "dr.grpo"] = "grpo",
+    strategy: Literal["grpo", "dr.grpo", "dapo"] = "grpo",
     max_resp_len: int = 1024, 
 ) -> torch.Tensor:
     """
@@ -99,11 +99,14 @@ class GRPOLoss(nn.Module):
         action_mask = experience.action_mask
         advantages = experience.advantages
 
-        kl = approx_kl_divergence(
-            log_probs=log_probs,
-            log_probs_ref=log_probs_ref,
-            action_mask=action_mask,
-        )
+        if self.policy_ops == "dapo":
+            kl = 0
+        else:
+            kl = approx_kl_divergence(
+                log_probs=log_probs,
+                log_probs_ref=log_probs_ref,
+                action_mask=action_mask,
+            )
 
         ratio = (log_probs - old_log_probs).exp()
         surr1 = ratio * advantages
@@ -112,6 +115,7 @@ class GRPOLoss(nn.Module):
         # DeepSeekMath algorithm (and PPO-style algorithms) maximizes GRPO objective.
         # However, in PyTorch optimizer, Adam minimizes the loss. 
         # Thus, we switch the sign here.
+        # Note that in the case using DAPO, kl = 0
         loss = -torch.min(surr1, surr2) + self.kl_weight * kl
 
         # Compute single loss for the whole sampled batch of outputs.

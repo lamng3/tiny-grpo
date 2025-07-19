@@ -155,6 +155,10 @@ def group_advantages(
     returns: torch.Tensor, 
     eps: float = 1e-8, 
     strategy: Literal["grpo", "dr.grpo", "dapo"] = "grpo",
+    f_norm: float = 1.0,
+    num_samples: int = 16,
+    n_valid_samples: int = 0,
+    num_generations: int = 32,
 ) -> torch.Tensor:
     """support different advantages grouping"""
     assert strategy in ("grpo", "dr.grpo", "dapo")
@@ -163,6 +167,18 @@ def group_advantages(
     if strategy == "dr.grpo":
         # Dr.GRPO modification 2: remove difficulty bias by just computing the MC advantage without dividing by std
         return returns - returns.mean()
+    if strategy == "dapo":
+        mean_grouped_rewards = returns.mean()
+        std_grouped_rewards = returns.mean()
+        g_mean_grouped_rewards = mean_grouped_rewards
+        g_std_grouped_rewards = std_grouped_rewards
+        
+        advantages = returns - mean_grouped_rewards
+
+        # inverse alpha and f_norm
+        inverse_alpha = n_valid_samples / num_samples
+        inverse_alpha = min(1.0, inverse_alpha)
+        return
     # default: use grpo version
     return (returns - returns.mean()) / (returns.std() + eps)
 
@@ -226,7 +242,7 @@ def main():
     checkpoint_interval = 20
 
     # grpo
-    policy_ops = "dapo" # policy optimization strategy
+    policy_ops = "gpg" # policy optimization strategy
     max_resp_len = 1024 # max response length (aka L_max in DAPO)
     overlong_buffer_len = 256 # overlong buffer length (aka L_cache in DAPO)
     train_batch_size = 16

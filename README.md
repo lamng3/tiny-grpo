@@ -7,9 +7,11 @@ This project is inspired by and builds upon [open-thought/tiny-grpo](https://git
 
 ### Updates
 
-**[2025-07-19]** (in-progress) Supporting [GPG: Group Policy Gradient](https://arxiv.org/abs/2504.02546). 
+**[2025-07-19]** (in-progress) Supporting [GPG: Group Policy Gradient](https://arxiv.org/abs/2504.02546). Some configurations can be found in [verl/gpg](https://verl.readthedocs.io/en/latest/algo/gpg.html). The main task here is to update reward modeling, grouping advantages, remove KL divergence.
 
-[verl/gpg](https://verl.readthedocs.io/en/latest/algo/gpg.html)
+- Following [GPG/open-r1/src/open_r1/gpg_trainer.py](https://github.com/AMAP-ML/GPG/blob/main/open-r1/src/open_r1/gpg_trainer.py), we implemented `inverse_alpha`, avoiding divide by zero when `n_valid_samples = 0`.
+
+- (in-progress) Resampling based on ratio of valid samples.
 
 **[2025-07-16]** Upgrading `transformers 4.48.1 -> 4.53.2`. Starting from `transformers>=4.50`, the library modularized model support (see [huggingface/transformers (release v4.50.0)](https://github.com/huggingface/transformers/releases/tag/v4.50.0)). Switched to using `AutoModelForCausalLM`.
 
